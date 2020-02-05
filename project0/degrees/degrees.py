@@ -92,8 +92,58 @@ def shortest_path(source, target):
     If no possible path, returns None.
     """
 
-    # TODO
-    raise NotImplementedError
+    num_explored = 0
+
+    # Initialize frontier to just the starting position
+    start = Node(state=source, parent=None, action=None)
+    # Use a Queue for BFS
+    frontier = QueueFrontier()
+    frontier.add(start)
+
+    # Initialize an empty explored set
+    explored = set()
+    # Initialize the solution as None if no solution is found
+    solution = None
+
+    # Keep looping until solution found
+    while True:
+
+        # If nothing left in frontier, then no path
+        if frontier.empty():
+            return solution
+
+        # Choose a node from the frontier
+        node = frontier.remove()
+        num_explored += 1
+
+        # If node is the goal, then we have a solution
+        if node.state == target:
+            # Actions are the movies
+            actions = []
+            # Cells are the people in the movies
+            cells = []
+            # Traverse backwards through the parents to find the connection
+            while node.parent is not None:
+                actions.append(node.action)
+                cells.append(node.state)
+                node = node.parent
+            # Reverse the actions and cells because algorithm is traversing backwards
+            actions.reverse()
+            cells.reverse()
+            # Zip them into a list of tuple pairs
+            solution = list(zip(actions, cells))
+            return solution
+
+        # Mark node as explored
+        explored.add(node.state)
+
+        # Add neighbors to frontier
+        for action, state in neighbors_for_person(node.state):
+            if not frontier.contains_state(state) and state not in explored:
+                child = Node(state=state, parent=node, action=action)
+                frontier.add(child)
+
+    return solution
 
 
 def person_id_for_name(name):
