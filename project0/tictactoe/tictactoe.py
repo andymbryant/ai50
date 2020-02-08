@@ -110,45 +110,6 @@ def utility(board):
         game_value = 0
     return game_value
 
-
-# def minimax(board):
-#     """
-#     Returns the optimal action for the current player on the board.
-#     """
-#     if terminal(board):
-#         return None
-#     else:
-#         cur_player = player(board)
-#         empty_positions = get_positions_of_value(board, EMPTY)
-#         if cur_player == X:
-#             opt_action = None
-#             best_score = float("-inf")
-#             for pos in empty_positions:
-#                 board_result = result(board, pos)
-#                 if terminal(board_result):
-#                     return board
-#                 action = minimax(board_result)
-#                 score = utility(result(board_result, opt_action))
-#                 if (score > opt_score):
-#                     opt_score = score
-#                     opt_action = pos
-#         elif cur_player == O:
-#             opt_action = None
-#             min_score = float("inf")
-#             for pos in empty_positions:
-#                 board_result = result(board, pos)
-#                 if terminal(board_result):
-#                     return pos
-#                 action = minimax(board_result)
-#                 score = utility(result(board_result, opt_action))
-#                 if (score < min_score):
-#                     min_score = score
-#                     opt_action = pos
-#         else:
-#             raise ValueError('Player must be X or O.')
-#         return opt_action
-
-
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
@@ -156,17 +117,18 @@ def minimax(board):
     if terminal(board):
         return None
     else:
+        best_action = None
         cur_player = player(board)
         empty_positions = get_positions_of_value(board, EMPTY)
         if cur_player == X:
-            best_action = None
             best_score = float("-inf")
             for pos in empty_positions:
                 board_result = result(board, pos)
                 score = get_best_score(board_result)
                 if (score > best_score):
+                    best_score = score
                     best_action = pos
-            return best_action
+            # return best_action
         elif cur_player == O:
             best_action = None
             best_score = float("inf")
@@ -174,11 +136,12 @@ def minimax(board):
                 board_result = result(board, pos)
                 score = get_best_score(board_result)
                 if (score < best_score):
+                    best_score = score
                     best_action = pos
-            return best_action
+            # return best_action
         else:
             raise ValueError('Player must be X or O.')
-        return best_action
+    return best_action
 
 def get_best_score(board):
     if terminal(board):
