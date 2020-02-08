@@ -128,7 +128,7 @@ def minimax(board):
                 if (score > best_score):
                     best_score = score
                     best_action = pos
-            # return best_action
+            return best_action
         elif cur_player == O:
             best_action = None
             best_score = float("inf")
@@ -138,10 +138,9 @@ def minimax(board):
                 if (score < best_score):
                     best_score = score
                     best_action = pos
-            # return best_action
+            return best_action
         else:
             raise ValueError('Player must be X or O.')
-    return best_action
 
 def get_best_score(board):
     if terminal(board):
