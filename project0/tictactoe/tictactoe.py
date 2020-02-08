@@ -115,7 +115,7 @@ def minimax(board):
     Returns the optimal action for the current player on the board.
     """
     if terminal(board):
-        return None
+        return utility(board)
     else:
         empty_positions = list(get_positions_of_value(board, EMPTY))
         index = randint(0, len(empty_positions) - 1)
