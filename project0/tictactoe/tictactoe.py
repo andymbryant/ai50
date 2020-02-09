@@ -5,7 +5,7 @@ Tic Tac Toe Player
 import math
 from random import randint
 from copy import deepcopy
-from helper import count_value, get_positions_of_value, get_winning_position_sets, minimax_run
+from helper import count_value, get_positions_of_value, get_winning_position_sets
 
 X = "X"
 O = "O"
@@ -24,6 +24,7 @@ def player(board):
     """
     Returns player who has the next turn on a board.
     """
+    # Get nunber of X's and O's
     x_count = count_value(board, X)
     o_count = count_value(board, O)
     if x_count == 0:
@@ -52,12 +53,13 @@ def result(board, action):
     """
     empty_positions = get_positions_of_value(board, EMPTY)
     if action not in empty_positions:
-        print('Illegal action: ', action)
         raise ValueError('This move is illegal.')
+
     # Make deep copy of board to prevent direct mutation
     board_copy = deepcopy(board)
     current_player = player(board_copy)
     row, col = action
+    # Take the action on the copy of the board
     board_copy[row][col] = current_player
     return board_copy
 
@@ -71,7 +73,7 @@ def winner(board):
     o_positions = get_positions_of_value(board, O)
     # Get all sets of winning positions
     winning_positions = get_winning_position_sets()
-    # Compare them
+    # Compare them with positions occupied by each player
     for win_set in winning_positions:
         if win_set.issubset(x_positions):
             player = X
@@ -85,15 +87,15 @@ def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    # If no empty spaces
     empty_positions = get_positions_of_value(board, EMPTY)
+    # If the board is full, the game is over
     if not empty_positions:
         game_over = True
+    # If either player has won, the game is over
     elif utility(board) in [-1, 1]:
         game_over = True
     else:
         game_over = False
-
     return game_over
 
 
@@ -118,48 +120,76 @@ def minimax(board):
         return None
     else:
         best_action = None
-        cur_player = player(board)
+        current_player = player(board)
         empty_positions = get_positions_of_value(board, EMPTY)
-        if cur_player == X:
+        if current_player == X:
+            # Initialize best score with lowest possible number
             best_score = float("-inf")
+            # Check each available move on the board
             for pos in empty_positions:
                 board_result = result(board, pos)
+                # Get result of that move
                 score = get_best_score(board_result)
+                # Check against existing best score
+                # X player wants a higher score
                 if (score > best_score):
                     best_score = score
                     best_action = pos
+                # Naive pruning
+                if best_score == 1:
+                    break
             return best_action
-        elif cur_player == O:
+        elif current_player == O:
             best_action = None
+            # Initialize best score with highest possible number
             best_score = float("inf")
+            # Check each available move on the board
             for pos in empty_positions:
                 board_result = result(board, pos)
+                # Get result of that move
                 score = get_best_score(board_result)
+                # Check against existing best score
+                # O player wants a lower score
                 if (score < best_score):
                     best_score = score
                     best_action = pos
+                # Naive pruning
+                if best_score == -1:
+                    break
             return best_action
         else:
             raise ValueError('Player must be X or O.')
 
 def get_best_score(board):
+    """
+    Recursive helper function for minimax that returns the best score by player
+    """
+    # Base case, return the result of the board
     if terminal(board):
         return utility(board)
     else:
-        cur_player = player(board)
+        current_player = player(board)
         empty_positions = get_positions_of_value(board, EMPTY)
-        if cur_player == X:
+        if current_player == X:
+            # Initialize best score with lowest possible number
             best_score = float("-inf")
+            # Check each available move on the board
             for pos in empty_positions:
                 board_result = result(board, pos)
+                # Get result of that move
                 score = get_best_score(board_result)
+                # Check against existing best score and get max for X player
                 best_score = max(best_score, score)
             return best_score
-        elif cur_player == O:
+        elif current_player == O:
+            # Initialize best score with highest possible number
             best_score = float("inf")
+            # Check each available move on the board
             for pos in empty_positions:
                 board_result = result(board, pos)
+                # Get result of that move
                 score = get_best_score(board_result)
+                # Check against existing best score and get min for O player
                 best_score = min(best_score, score)
             return best_score
         else:

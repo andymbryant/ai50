@@ -23,9 +23,6 @@ user = None
 board = ttt.initial_state()
 ai_turn = False
 
-
-# breakpoint()
-
 while True:
 
     for event in pygame.event.get():
@@ -36,7 +33,6 @@ while True:
 
     # Let user choose a player.
     if user is None:
-        # breakpoint()
         # Draw title
         title = largeFont.render("Play Tic-Tac-Toe", True, white)
         titleRect = title.get_rect()
@@ -70,7 +66,6 @@ while True:
                 user = ttt.O
 
     else:
-        # breakpoint()
         # Draw game board
         tile_size = 80
         tile_origin = (width / 2 - (1.5 * tile_size),
@@ -93,7 +88,6 @@ while True:
                     screen.blit(move, moveRect)
                 row.append(rect)
             tiles.append(row)
-        # breakpoint()
         game_over = ttt.terminal(board)
         player = ttt.player(board)
 
