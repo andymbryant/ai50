@@ -5,6 +5,7 @@ X = "X"
 O = "O"
 EMPTY = None
 
+
 class TestTTTMethods(unittest.TestCase):
 
     def setUp(self):
@@ -42,16 +43,18 @@ class TestTTTMethods(unittest.TestCase):
 
     def test_actions(self):
         actions_1 = ttt.actions(self.board_1)
-        self.assertEqual(actions_1, {(0,0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)} )
+        self.assertEqual(actions_1, {
+                         (0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2), (2, 0), (2, 1), (2, 2)})
 
         actions_2 = ttt.actions(self.board_2)
-        self.assertEqual(actions_2, {(0, 0), (0, 1), (1, 0), (1, 2), (2, 1), (2, 2)})
+        self.assertEqual(
+            actions_2, {(0, 0), (0, 1), (1, 0), (1, 2), (2, 1), (2, 2)})
 
         actions_3 = ttt.actions(self.board_3)
         self.assertEqual(actions_3, {(1, 2), (2, 0), (2, 1), (2, 2)})
 
     def test_result(self):
-        action_1 = (1,2)
+        action_1 = (1, 2)
         result_1 = ttt.result(self.board_1, action_1)
         self.assertEqual(
             result_1, [[EMPTY, EMPTY, EMPTY],

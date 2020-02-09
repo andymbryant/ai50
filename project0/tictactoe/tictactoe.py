@@ -19,7 +19,6 @@ def initial_state():
             [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
 
-
 def player(board):
     """
     Returns player who has the next turn on a board.
@@ -37,7 +36,6 @@ def player(board):
         player = X
     return player
 
-
 def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
@@ -48,7 +46,6 @@ def actions(board):
         empty_positions = get_positions_of_value(board, EMPTY)
         return empty_positions
 
-
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
@@ -56,7 +53,6 @@ def result(board, action):
     empty_positions = get_positions_of_value(board, EMPTY)
     if action not in empty_positions:
         raise ValueError('This move is illegal.')
-
     # Make deep copy of board to prevent direct mutation
     board_copy = deepcopy(board)
     current_player = player(board_copy)
@@ -99,7 +95,6 @@ def terminal(board):
     else:
         game_over = False
     return game_over
-
 
 def utility(board):
     """
