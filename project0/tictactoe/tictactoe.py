@@ -24,7 +24,9 @@ def player(board):
     """
     Returns player who has the next turn on a board.
     """
-    # Get nunber of X's and O's
+    if terminal(board):
+        return None
+    # Get number of X's and O's
     x_count = count_value(board, X)
     o_count = count_value(board, O)
     if x_count == 0:
