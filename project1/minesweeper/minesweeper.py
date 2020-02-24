@@ -129,8 +129,7 @@ class Sentence():
         """
         if cell in self.cells:
             self.cells.remove(cell)
-            self.count += 1
-        raise NotImplementedError
+            self.count -= 1
 
     def mark_safe(self, cell):
         """
@@ -139,8 +138,6 @@ class Sentence():
         """
         if cell in self.cells:
             self.cells.remove(cell)
-            self.count -= 1
-
 
 class MinesweeperAI():
     """
@@ -168,6 +165,7 @@ class MinesweeperAI():
         Marks a cell as a mine, and updates all knowledge
         to mark that cell as a mine as well.
         """
+        print('mark mine in minesweeper')
         self.mines.add(cell)
         for sentence in self.knowledge:
             sentence.mark_mine(cell)
@@ -196,12 +194,43 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+        # 1
         self.moves_made.add(cell)
+        # 2
         self.mark_safe(cell)
+        # 3
         neighbors = self.get_neighbors(cell)
         self.knowledge.add(Sentence(neighbors, count))
+        # 4
+        # self.print_knowledge()
+        _knowledge = copy.deepcopy(self.knowledge)
+        for _sentence in _knowledge:
+            _known_safes = _sentence.known_safes()
+            _known_mines = _sentence.known_mines()
+            for sentence in self.knowledge:
+                int_safes = sentence.cells.intersection(_known_safes)
+                int_mines = sentence.cells.intersection(_known_mines)
+                if len(int_safes):
+                    for i in int_safes:
+                        self.mark_safe(i)
+                if len(int_mines):
+                    for j in int_mines:
+                        self.mark_mine(j)
+        # 5
+
+
+    def print_knowledge(self):
+        '''
+        Helper function for printing all knowledge
+        '''
+        for i, sentence in enumerate(self.knowledge):
+            print('Sentence' + str(i) + ': ' + str(sentence.cells) + ' = ' + str(sentence.count))
 
     def get_neighbors(self, cell):
+        '''
+        Helper function for getting the neighbors of a particular cell.
+        This includes left, right, top, bottom, and all diagonals and exludes itself.
+        '''
         neighbors = set()
         for row in range(cell[0] - 1, cell[0] + 2):
             for col in range(cell[1] - 1, cell[1] + 2):
