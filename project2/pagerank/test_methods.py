@@ -13,6 +13,7 @@ class TestPageRankMethods(unittest.TestCase):
     def testTransitionModel(self):
         ranks_0 = pr.transition_model(self.corpus_0, "1.html", DAMPING)
         self.assertEqual(ranks_0, {"1.html": 0.05, "2.html": 0.475, "3.html": 0.475})
+        # Add method to check if all values add to 1
 
         ranks_1 = pr.transition_model(self.corpus_1, "1.html", DAMPING)
         self.assertEqual(ranks_1, {"1.html": 0.333, "2.html": 0.333, "3.html": 0.333})

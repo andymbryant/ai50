@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+from numpy.random import choice
 
 DAMPING = 0.85
 SAMPLES = 10_000
@@ -56,7 +57,7 @@ def transition_model(corpus, current_page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    dist_model = {}
+    trans_model = {}
     all_pages = corpus.keys()
     num_all_pages = len(all_pages)
     base_prob = (1 - damping_factor) / num_all_pages
@@ -65,14 +66,14 @@ def transition_model(corpus, current_page, damping_factor):
         num_links = len(corpus[page])
         if num_links < 1:
             for p in corpus:
-                dist_model[p] = round((1 / num_all_pages), 3)
-            return dist_model
+                trans_model[p] = round((1 / num_all_pages), 3)
+            return trans_model
         else:
             if page != current_page:
-                dist_model[page] = round(base_prob + (damping_factor / (num_all_pages - 1)), 3)
+                trans_model[page] = round(base_prob + (damping_factor / (num_all_pages - 1)), 3)
             else:
-                dist_model[page] = round(base_prob, 3)
-    return dist_model
+                trans_model[page] = round(base_prob, 3)
+    return trans_model
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -84,9 +85,20 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    for current_page in corpus:
-        dist_model = transition_model(corpus, current_page, damping_factor)
+    page_names = list(corpus.keys())
+    pagerank = {k:-1 for k in page_names}
+    current_page = ""
+    for i in range(n):
+        if current_page == "":
+            current_page = random.choice(page_names)
+        trans_model = transition_model(corpus, current_page, damping_factor)
+        candidates = list(trans_model.keys())
+        prob_dist = list(trans_model.values())
+        current_page = choice(candidates, 1, prob_dist)[0]
+        pagerank[current_page] += 1
 
+    pagerank = {k:v/n for (k,v) in pagerank.items()}
+    return pagerank
 
 def iterate_pagerank(corpus, damping_factor):
     """
