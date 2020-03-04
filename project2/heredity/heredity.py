@@ -139,42 +139,31 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    one_gene
-    two_genes
-    have_trait
-
     people_prob = {}
     for person in people:
         people_prob[person] = None
         # Get the number of copies of the gene
-        num_copies = get_num_copies(person, one_gene, two_genes)
+        person_num_copies = get_num_copies(person, one_gene, two_genes)
         # Check if person has the trait
         has_trait = check_has_trait(person, have_trait)
         # Get the prob of trait given the number of copies and if has trait
-        has_trait_prob = PROBS["trait"][num_copies][has_trait]
+        has_trait_prob = PROBS["trait"][person_num_copies][has_trait]
+
         mother = people[person]['mother']
         father = people[person]['father']
 
-        if mother is None or num_copies == 0:
-            has_gene_prob = PROBS['gene'][num_copies]
+        # If no parent information
+        if mother is None and father is None:
+            has_gene_prob = PROBS['gene'][person_num_copies]
         else:
-            if num_copies == 1:
-                inherit_from_mother_prob = PROBS["mutation"] * (1 - PROBS["mutation"])
-                inherit_from_father_prob = (1 - PROBS["mutation"]) * PROBS["mutation"]
-            # If two copies, then person got one from each parent
-            elif num_copies == 2:
-                mother_num_copies = get_num_copies(mother, one_gene, two_genes)
-                mother_has_gene_prob = PROBS['gene'][mother_num_copies]
+            mother_num_copies = get_num_copies(mother, one_gene, two_genes)
+            father_num_copies = get_num_copies(father, one_gene, two_genes)
 
-                father_num_copies = get_num_copies(father, one_gene, two_genes)
-                father_has_gene_prob = PROBS['gene'][father_num_copies]
-                # Probability that mother had one or two copies
+            mother_gives_gene = get_prob_parent_gives_gene(mother_num_copies)
+            father_gives_gene = get_prob_parent_gives_gene(father_num_copies)
 
-                inherit_from_mother_prob = mother_has_gene_prob * father_has_gene_prob
-                inherit_from_father_prob = father_has_gene_prob * mother_has_gene_prob
-                # Probability that father had one or two copies
-            else:
-                raise AssertionError
+            inherit_from_mother_prob = mother_gives_gene * father_gives_gene
+            inherit_from_father_prob = father_gives_gene * mother_gives_gene
             has_gene_prob = 1 - (inherit_from_mother_prob + inherit_from_father_prob)
         people_prob[person] = has_gene_prob * has_trait_prob
 
@@ -186,11 +175,15 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             joint_prob = joint_prob * person_prob
     return joint_prob
 
-def has_parents(people, person, parent_name):
-
-    # get parent1
-    # get parent2
-    pass
+def get_prob_parent_gives_gene(num_copies):
+    if num_copies == 0:
+        return PROBS["mutation"]
+    elif num_copies == 1:
+        return 0.5
+    elif num_copies == 2:
+        return 1 - PROBS["mutation"]
+    else:
+        raise ValueError
 
 def get_num_copies(person, one_gene, two_genes):
     if person in one_gene:
@@ -214,7 +207,14 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     Which value for each distribution is updated depends on whether
     the person is in `have_gene` and `have_trait`, respectively.
     """
-    raise NotImplementedError
+    for person in probabilities:
+        num_copies = get_num_copies(person, one_gene, two_genes)
+        if num_copies > 0:
+            probabilities[person]["gene"][num_copies] += p
+
+        has_trait = check_has_trait(person, have_trait)
+        if has_trait:
+            probabilities[person]["trait"][has_trait]
 
 
 def normalize(probabilities):
@@ -222,7 +222,15 @@ def normalize(probabilities):
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
-    raise NotImplementedError
+    for person in probabilities:
+        all_gene_probs = []
+        for gene_prob_key in probabilities[person]['gene']:
+            gene_prob = probabilities[person]['gene'][gene_prob_key]
+            all_gene_probs.append(gene_prob)
+        sum_all_gene_probs = sum(all_gene_probs)
+
+        for gene_prob_key in probabilities[person]['gene']:
+            probabilities[person]['gene'][gene_prob_key] = probabilities[person]['gene'][gene_prob_key] / sum_all_gene_probs
 
 
 if __name__ == "__main__":

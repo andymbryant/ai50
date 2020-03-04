@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal",
-      "args": ["./data/family1.csv"]
+      "args": ["./data/family2.csv"]
     }
   ]
 }
