@@ -24,7 +24,7 @@ class TestPageRankMethods(unittest.TestCase):
 
     def testIteratePagerank(self):
         pagerank_3 = pr.iterate_pagerank(self.corpus_3, DAMPING)
-        self.assertEqual(pagerank_3, 1)
+        self.assertEqual(pagerank_3, {'1.html': 0.232539658203125, '2.html': 0.43412700846354163, '3.html': 0.3333333333333333})
 
 if __name__ == '__main__':
     unittest.main()

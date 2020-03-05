@@ -2,6 +2,7 @@ import os
 import random
 import re
 import sys
+import copy
 from numpy.random import choice
 
 DAMPING = 0.85
@@ -111,10 +112,20 @@ def iterate_pagerank(corpus, damping_factor):
     """
     page_names = list(corpus.keys())
     num_pages = len(page_names)
-    init_pagerank_dict = {k:1/num_pages for k in page_names}
-    new_pagerank_dict = {k:1/num_pages for k in page_names}
-    for page in new_pagerank_dict:
-        new_pagerank_dict[page] = get_pagerank(corpus, init_pagerank_dict, page, damping_factor)
+    start_pagerank_dict = {k:1/num_pages for k in page_names}
+    end_pagerank_dict = {k:1000/num_pages for k in page_names}
+    first = True
+    while abs(start_pagerank_dict['1.html'] - end_pagerank_dict['1.html']) > 0.01:
+        if not first:
+            start_pagerank_dict = copy.deepcopy(end_pagerank_dict)
+        first = False
+        end_pagerank_dict = get_pagerank_dict(corpus, start_pagerank_dict, damping_factor)
+    return end_pagerank_dict
+
+def get_pagerank_dict(corpus, pagerank_dict, damping_factor):
+    new_pagerank_dict = copy.deepcopy(pagerank_dict)
+    for page in pagerank_dict:
+        new_pagerank_dict[page] = get_pagerank(corpus, pagerank_dict, page, damping_factor)
     return new_pagerank_dict
 
 def get_pagerank(corpus, pagerank_dict, target_page, damping_factor):
@@ -140,11 +151,6 @@ def get_links(corpus, target_page, incoming):
             if page in corpus[target_page]:
                 linked_pages.add(page)
     return linked_pages
-
-# def get_probability(old_prob, new_prob, damping_factor):
-#     if abs(old_prob - new_prob) < 0.01:
-#         return old_prob
-#     else:
 
 
 if __name__ == "__main__":
