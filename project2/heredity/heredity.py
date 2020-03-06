@@ -127,7 +127,6 @@ def powerset(s):
         )
     ]
 
-
 def joint_probability(people, one_gene, two_genes, have_trait):
     """
     Compute and return a joint probability.
@@ -199,7 +198,6 @@ def check_has_trait(person, have_trait):
     else:
         return False
 
-
 def update(probabilities, one_gene, two_genes, have_trait, p):
     """
     Add to `probabilities` a new joint probability `p`.
@@ -214,8 +212,7 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
 
         has_trait = check_has_trait(person, have_trait)
         if has_trait:
-            probabilities[person]["trait"][has_trait]
-
+            probabilities[person]["trait"][has_trait] += p
 
 def normalize(probabilities):
     """
@@ -231,7 +228,6 @@ def normalize(probabilities):
 
         for gene_prob_key in probabilities[person]['gene']:
             probabilities[person]['gene'][gene_prob_key] = probabilities[person]['gene'][gene_prob_key] / sum_all_gene_probs
-
 
 if __name__ == "__main__":
     main()
