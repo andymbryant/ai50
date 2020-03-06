@@ -37,9 +37,7 @@ PROBS = {
     "mutation": 0.01
 }
 
-
 def main():
-
     # Check for proper usage
     if len(sys.argv) != 2:
         sys.exit("Usage: python heredity.py data.csv")
