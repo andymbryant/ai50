@@ -46,7 +46,7 @@ def crawl(directory):
 
     return pages
 
-def transition_model(corpus, current_page, damping_factor):
+def transition_model(corpus, page, damping_factor):
     """
     Return a probability distribution over which page to visit next,
     given a current page.
@@ -56,23 +56,17 @@ def transition_model(corpus, current_page, damping_factor):
     a link at random chosen from all pages in the corpus.
     """
     trans_model = {}
-    all_pages = list(corpus.keys())
-    num_all_pages = len(all_pages)
-    base_prob = (1 - damping_factor) / num_all_pages
-
-    for page in corpus:
-        num_links = len(corpus[page])
-        if num_links < 1:
-            for p in corpus:
-                trans_model[p] = round((1 / num_all_pages), 3)
-            return trans_model
-        else:
-            if page != current_page:
-                trans_model[page] = round(
-                    base_prob + (damping_factor / (num_all_pages - 1)), 3)
-            else:
-                trans_model[page] = round(base_prob, 3)
-    return trans_model
+    links = corpus[page]
+    num_links = len(links)
+    # If the page has no links, return an even prob distribution of all pages
+    if num_links < 1:
+        return {k:1/len(corpus) for k,v in corpus.items()}
+    else:
+        base_prob = round((1 - damping_factor) / len(corpus), 3)
+        trans_model[page] = base_prob
+        for link in links:
+            trans_model[link] = round(((damping_factor / num_links) + base_prob), 3)
+        return normalize_dict(trans_model)
 
 def sample_pagerank(corpus, damping_factor, n):
     """
@@ -94,9 +88,7 @@ def sample_pagerank(corpus, damping_factor, n):
         for k, v in trans_model.items():
             candidates.append(k)
             prob_dist.append(v)
-        print(prob_dist)
-        current_page = random.choices(candidates, prob_dist)
-        print(current_page)
+        current_page = random.choices(candidates, prob_dist)[0]
     # TODO normalize
     pagerank = {k:v/n for (k, v) in pagerank.items()}
     norm_factor = 1/sum(pagerank.values())
@@ -157,6 +149,12 @@ def get_links(corpus, target_page, incoming):
             if page in corpus[target_page]:
                 linked_pages.add(page)
     return linked_pages
+
+def normalize_dict(raw_dict):
+    _dict = copy.deepcopy(raw_dict)
+    norm_factor = 1/sum(_dict.values())
+    normalized_dict = {k:v*norm_factor for k, v in _dict.items()}
+    return normalized_dict
 
 if __name__ == "__main__":
     main()
