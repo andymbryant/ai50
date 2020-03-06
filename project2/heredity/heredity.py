@@ -1,6 +1,7 @@
 import csv
 import itertools
 import sys
+import numpy
 
 PROBS = {
 
@@ -150,10 +151,11 @@ def joint_probability(people, one_gene, two_genes, have_trait):
 
         mother = people[person]['mother']
         father = people[person]['father']
+        naive_prob = PROBS['gene'][person_num_copies]
 
         # If no parent information
         if mother is None and father is None:
-            has_gene_prob = PROBS['gene'][person_num_copies]
+            has_gene_prob = naive_prob
         else:
             mother_num_copies = get_num_copies(mother, one_gene, two_genes)
             father_num_copies = get_num_copies(father, one_gene, two_genes)
@@ -161,18 +163,39 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             mother_gives_gene = get_prob_parent_gives_gene(mother_num_copies)
             father_gives_gene = get_prob_parent_gives_gene(father_num_copies)
 
-            inherit_from_mother_prob = mother_gives_gene * father_gives_gene
-            inherit_from_father_prob = father_gives_gene * mother_gives_gene
-            has_gene_prob = 1 - (inherit_from_mother_prob + inherit_from_father_prob)
-        people_prob[person] = has_gene_prob * has_trait_prob
+            # Working on it...
 
-    joint_prob = -1
-    for person_prob in people_prob.values():
-        if joint_prob == -1:
-            joint_prob = person_prob
-        else:
-            joint_prob = joint_prob * person_prob
-    return joint_prob
+            if person_num_copies == 0:
+                has_gene_prob = mother_gives_gene + father_gives_gene
+            elif person_num_copies == 1:
+                has_gene_prob = (mother_gives_gene * (1 - father_gives_gene)) + ((1 - mother_gives_gene) * father_gives_gene)
+            elif person_num_copies == 2:
+                has_gene_prob = mother_gives_gene * father_gives_gene
+            else:
+                raise ValueError('You messed up')
+                # mother_inherit_prob = mother_gives_gene + PROBS["mutation"]
+            # else:
+                # mother_inherit_prob =
+            # father_inherit_prob = ((1 - mother_gives_gene) * father_gives_gene)
+            # inherit_prob = mother_inherit_prob + father_inherit_prob
+
+            # if father_num_copies == 2:
+                # father_inherit_prob = ((1 - mother_gives_gene) * father_gives_gene)
+
+            # inherit_prob = mother_inherit_prob + father_inherit_prob
+            # Adding naive prob makes verified test fail
+
+            #  add different conditions for
+
+
+            # Closer for everyone overall
+            # inherit_prob = mother_gives_gene + father_gives_gene
+            # person_prob = PROBS['gene'][person_num_copies]
+            # has_gene_prob = inherit_prob + naive_prob
+
+        people_prob[person] = has_gene_prob * has_trait_prob
+        # Multiply all values together
+    return numpy.prod(list(people_prob.values()))
 
 def get_prob_parent_gives_gene(num_copies):
     if num_copies == 0:
@@ -207,27 +230,26 @@ def update(probabilities, one_gene, two_genes, have_trait, p):
     """
     for person in probabilities:
         num_copies = get_num_copies(person, one_gene, two_genes)
-        if num_copies > 0:
-            probabilities[person]["gene"][num_copies] += p
+        probabilities[person]["gene"][num_copies] += p
 
         has_trait = check_has_trait(person, have_trait)
-        if has_trait:
-            probabilities[person]["trait"][has_trait] += p
+        probabilities[person]["trait"][has_trait] += p
 
 def normalize(probabilities):
     """
     Update `probabilities` such that each probability distribution
     is normalized (i.e., sums to 1, with relative proportions the same).
     """
+    keys = ['gene', 'trait']
     for person in probabilities:
-        all_gene_probs = []
-        for gene_prob_key in probabilities[person]['gene']:
-            gene_prob = probabilities[person]['gene'][gene_prob_key]
-            all_gene_probs.append(gene_prob)
-        sum_all_gene_probs = sum(all_gene_probs)
+        for key in keys:
+            all_key_probs = []
+            for val in probabilities[person][key].values():
+                all_key_probs.append(val)
+            sum_all_key_probs = sum(all_key_probs)
 
-        for gene_prob_key in probabilities[person]['gene']:
-            probabilities[person]['gene'][gene_prob_key] = probabilities[person]['gene'][gene_prob_key] / sum_all_gene_probs
+            for k in probabilities[person][key].keys():
+                probabilities[person][key][k] = probabilities[person][key][k] / sum_all_key_probs
 
 if __name__ == "__main__":
     main()
