@@ -11,16 +11,16 @@ class TestPageRankMethods(unittest.TestCase):
         self.corpus_2 = {"2.html": {}, "3.html": {"2.html"}}
         self.corpus_3 = {"1.html": {"2.html", "3.html"}, "2.html": {"1.html", "3.html"}, "3.html": {"2.html"}}
 
-    # def testTransitionModel(self):
-    #     trans_model_0 = pr.transition_model(self.corpus_0, "1.html", DAMPING)
-    #     self.assertEqual(trans_model_0, {"1.html": 0.05, "2.html": 0.475, "3.html": 0.475})
-    #     # Add method to check if all values add to 1
+    def testTransitionModel(self):
+        trans_model_0 = pr.transition_model(self.corpus_0, "1.html", DAMPING)
+        self.assertEqual(trans_model_0, {"1.html": 0.05, "2.html": 0.475, "3.html": 0.475})
+        # Add method to check if all values add to 1
 
-    #     trans_model_1 = pr.transition_model(self.corpus_1, "1.html", DAMPING)
-    #     self.assertEqual(trans_model_1, {"1.html": 0.333, "2.html": 0.333, "3.html": 0.333})
+        trans_model_1 = pr.transition_model(self.corpus_1, "1.html", DAMPING)
+        self.assertEqual(trans_model_1, {"1.html": 0.333, "2.html": 0.333, "3.html": 0.333})
 
-    #     trans_model_2 = pr.transition_model(self.corpus_2, "2.html", DAMPING)
-    #     self.assertEqual(trans_model_2, {"2.html": 0.500, "3.html": 0.500})
+        trans_model_2 = pr.transition_model(self.corpus_2, "2.html", DAMPING)
+        self.assertEqual(trans_model_2, {"2.html": 0.500, "3.html": 0.500})
 
     def testIteratePagerank(self):
         pagerank_3 = pr.iterate_pagerank(self.corpus_3, DAMPING)

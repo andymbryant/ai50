@@ -3,10 +3,9 @@ import random
 import re
 import sys
 import copy
-from numpy.random import choice
 
 DAMPING = 0.85
-SAMPLES = 10_000
+SAMPLES = 10000
 
 def main():
     if len(sys.argv) != 2:
@@ -20,7 +19,6 @@ def main():
     print(f"PageRank Results from Iteration")
     for page in sorted(ranks):
         print(f"  {page}: {ranks[page]:.4f}")
-
 
 def crawl(directory):
     """s
@@ -48,7 +46,6 @@ def crawl(directory):
 
     return pages
 
-
 def transition_model(corpus, current_page, damping_factor):
     """
     Return a probability distribution over which page to visit next,
@@ -59,7 +56,7 @@ def transition_model(corpus, current_page, damping_factor):
     a link at random chosen from all pages in the corpus.
     """
     trans_model = {}
-    all_pages = corpus.keys()
+    all_pages = list(corpus.keys())
     num_all_pages = len(all_pages)
     base_prob = (1 - damping_factor) / num_all_pages
 
@@ -71,11 +68,11 @@ def transition_model(corpus, current_page, damping_factor):
             return trans_model
         else:
             if page != current_page:
-                trans_model[page] = round(base_prob + (damping_factor / (num_all_pages - 1)), 3)
+                trans_model[page] = round(
+                    base_prob + (damping_factor / (num_all_pages - 1)), 3)
             else:
                 trans_model[page] = round(base_prob, 3)
     return trans_model
-
 
 def sample_pagerank(corpus, damping_factor, n):
     """
@@ -87,19 +84,24 @@ def sample_pagerank(corpus, damping_factor, n):
     PageRank values should sum to 1.
     """
     page_names = list(corpus.keys())
-    pagerank = {k:-1 for k in page_names}
-    current_page = ""
+    pagerank = {k:0 for k in page_names}
+    current_page = random.choice(page_names)
     for i in range(n):
-        if current_page == "":
-            current_page = random.choice(page_names)
         trans_model = transition_model(corpus, current_page, damping_factor)
-        candidates = list(trans_model.keys())
-        prob_dist = list(trans_model.values())
-        current_page = choice(candidates, 1, prob_dist)[0]
         pagerank[current_page] += 1
-
-    pagerank = {k:v/n for (k,v) in pagerank.items()}
-    return pagerank
+        candidates = []
+        prob_dist = []
+        for k, v in trans_model.items():
+            candidates.append(k)
+            prob_dist.append(v)
+        print(prob_dist)
+        current_page = random.choices(candidates, prob_dist)
+        print(current_page)
+    # TODO normalize
+    pagerank = {k:v/n for (k, v) in pagerank.items()}
+    norm_factor = 1/sum(pagerank.values())
+    normalized_pagerank = {k:v*norm_factor for k, v in pagerank.items()}
+    return normalized_pagerank
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -119,13 +121,15 @@ def iterate_pagerank(corpus, damping_factor):
         if not first:
             start_pagerank_dict = copy.deepcopy(end_pagerank_dict)
         first = False
-        end_pagerank_dict = get_pagerank_dict(corpus, start_pagerank_dict, damping_factor)
+        end_pagerank_dict = get_pagerank_dict(
+            corpus, start_pagerank_dict, damping_factor)
     return end_pagerank_dict
 
 def get_pagerank_dict(corpus, pagerank_dict, damping_factor):
     new_pagerank_dict = copy.deepcopy(pagerank_dict)
     for page in pagerank_dict:
-        new_pagerank_dict[page] = get_pagerank(corpus, pagerank_dict, page, damping_factor)
+        new_pagerank_dict[page] = get_pagerank(
+            corpus, pagerank_dict, page, damping_factor)
     return new_pagerank_dict
 
 def get_pagerank(corpus, pagerank_dict, target_page, damping_factor):
@@ -136,7 +140,9 @@ def get_pagerank(corpus, pagerank_dict, target_page, damping_factor):
         alt = 0
     else:
         # alt = damping_factor * sum( [get_pagerank(corpus, i, damping_factor)/get_links(corpus, i, False) for i in incoming_links])
-        alt = damping_factor * sum( [pagerank_dict[i]/len(get_links(corpus, i, False)) for i in incoming_links])
+        alt = damping_factor * \
+            sum([pagerank_dict[i]/len(get_links(corpus, i, False))
+                 for i in incoming_links])
     return rand + alt
 
 def get_links(corpus, target_page, incoming):
@@ -151,7 +157,6 @@ def get_links(corpus, target_page, incoming):
             if page in corpus[target_page]:
                 linked_pages.add(page)
     return linked_pages
-
 
 if __name__ == "__main__":
     main()

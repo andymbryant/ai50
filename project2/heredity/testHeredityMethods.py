@@ -49,10 +49,7 @@ class TestHeredityMethods(unittest.TestCase):
 
     def testNormalize(self):
         hr.normalize(self.probabilities_0)
-        # print(self.probabilities_0)
-        # print("------------")
-        # print(self.probabilities_0_norm)
-        # self.assertEqual(self.probabilities_0, self.probabilities_0_norm)
+        self.assertEqual(self.probabilities_0, self.probabilities_0_norm)
 
 if __name__ == '__main__':
     unittest.main()
