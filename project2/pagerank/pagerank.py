@@ -89,11 +89,8 @@ def sample_pagerank(corpus, damping_factor, n):
             candidates.append(k)
             prob_dist.append(v)
         current_page = random.choices(candidates, prob_dist)[0]
-    # TODO normalize
     pagerank = {k:v/n for (k, v) in pagerank.items()}
-    norm_factor = 1/sum(pagerank.values())
-    normalized_pagerank = {k:v*norm_factor for k, v in pagerank.items()}
-    return normalized_pagerank
+    return normalize_dict(pagerank)
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -109,7 +106,7 @@ def iterate_pagerank(corpus, damping_factor):
     start_pagerank_dict = {k:1/num_pages for k in page_names}
     end_pagerank_dict = {k:1000/num_pages for k in page_names}
     first = True
-    while abs(start_pagerank_dict['1.html'] - end_pagerank_dict['1.html']) > 0.01:
+    while abs(list(start_pagerank_dict.values())[0] - list(end_pagerank_dict.values())[0]) > 0.01:
         if not first:
             start_pagerank_dict = copy.deepcopy(end_pagerank_dict)
         first = False
