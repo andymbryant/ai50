@@ -108,7 +108,7 @@ class CrosswordCreator():
             # Update the domains for each var to only include words that are equal to var.length
             self.domains[var] = [word for word in value if len(word) == var.length]
 
-    def revise(self, x, y):
+    def revise(self, x, y, standard=True):
         """
         Make variable `x` arc consistent with variable `y`.
         To do so, remove values from `self.domains[x]` for which there is no
@@ -121,12 +121,17 @@ class CrosswordCreator():
         x_domains = deepcopy(self.domains[x])
         y_domains = deepcopy(self.domains[y])
 
+        if not standard:
+            x_domains_copy = deepcopy(self.domains[x])
         # Get overlap coordinates for two variables
         try:
             i, j = self.crossword.overlaps[x, y]
         except:
             # If there is no overlap, then return revised (False)
-            return revised
+            if standard:
+                return revised
+            else:
+                return -1
 
         # Loop through all words in x_domains
         for x_word in x_domains:
@@ -134,10 +139,16 @@ class CrosswordCreator():
             yj = [y_word for y_word in y_domains if y_word[j] == x_word[i]]
             # If there are no such words then remove x_word from domains
             if len(yj) == 0:
-                self.domains[x].remove(x_word)
-                # Update revised
-                revised = True
-        return revised
+                if standard:
+                    self.domains[x].remove(x_word)
+                    # Update revised
+                    revised = True
+                else:
+                    x_domains_copy[x].remove(x_word)
+        if standard:
+            return revised
+        else:
+            return x_domains_copy
 
     def ac3(self, arcs=None):
         """
@@ -243,16 +254,25 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        # domain_values = []
-        # naive way is to return them all
-        # least constraining values heuristic
-        # choose the one that rules out the fewest possible options
-        # 1:40:20
-        # domain_values_sorted = sorted(domain_values.sort, key=lambda x: x.foo)
+        value_counts = []
+        # Loop through values in domains
+        for value in self.domains[var]:
+            count = 0
+            # Get all neighbors of var and increment count for each
+            for neighbor in self.crossword.neighbors(var):
+                # This takes much longer, but works
+                # val = len(self.revise(var, neighbor, False))
+                # if val != -1:
+                    # count += val
 
-        domain_values = deepcopy(self.domains[var])
+                count += 1
+            # Add value and count to constraints
+            value_counts.append([value, count])
 
-
+        # Sort value counts by count
+        value_counts_sorted = sorted(value_counts, key=lambda x: x[1])
+        # Remove counts from list
+        domain_values = [value[0] for value in value_counts_sorted]
         return domain_values
 
     def select_unassigned_variable(self, assignment):
@@ -301,18 +321,22 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
+        # If the assignment is complete then return
         if self.assignment_complete(assignment):
             return assignment
+        # Get an unassigned variable
         var = self.select_unassigned_variable(assignment)
-        # for value in self.domains[var]:
+        # Get domain values ordered by least amount of neighbors affected
         for value in self.order_domain_values(var, assignment):
+            # Copy assignment and add value at var
             new_assignment = assignment.copy()
             new_assignment[var] = value
+            # Check if assignment is consistent
             if self.consistent(new_assignment):
+                # Get result of backtracking on assignment
                 result = self.backtrack(new_assignment)
                 if result is not None:
                     return result
-                # del assignment[var]
         return None
 
 
