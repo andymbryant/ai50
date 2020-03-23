@@ -40,7 +40,8 @@ class TestMethods(unittest.TestCase):
         self.assertEqual(all(creator_2_flags), True)
 
 
-
+    def test_revise(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
