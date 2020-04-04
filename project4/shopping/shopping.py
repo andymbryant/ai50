@@ -63,21 +63,23 @@ def load_data(filename):
     labels should be the corresponding list of labels, where each label
     is 1 if Revenue is true, and 0 otherwise.
     """
-
+    # Read in file
     df = pd.read_csv('./' + filename + '.csv')
-
+    # Isolate features of dataframe
     X = df.drop('Revenue', axis=1)
+    # Convert VisitorType column to numerical values
     X['VisitorType'] = X['VisitorType'].apply(lambda val: 1 if val == 'Returning_Visitor' else 0)
+    # Convert month to consistent format
     X['Month'] = X['Month'].apply(lambda val: convert_month(val))
+    # Convert Weekend column to numerical values
     X['Weekend'] = X['Weekend'].apply(lambda val: 1 if val == True else 0)
-
+    # Set outcome variable (y)
     y = df['Revenue']
-
+    # Convert predictor and outcome values to lists
     evidence_raw = X.values.tolist()
     labels = y.values.tolist()
-
+    # Ensure types are proper, according to project spec
     evidence = convert_types(evidence_raw)
-
     return (evidence, labels)
 
 
@@ -86,6 +88,7 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
+    # Instantiate KNeighbors Classifier and fit to evidence/labels
     return KNeighborsClassifier(n_neighbors=1).fit(evidence,labels)
 
 def evaluate(labels, predictions):
@@ -103,10 +106,16 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-
+    # Generate a confusion matrix and assign related values
     cm = confusion_matrix(labels, predictions)
-    sensitivity = cm[0,0] / (cm[0,0] + cm[0,1])
-    specificity = cm[1,1] / (cm[1,0] + cm[1,1])
+    true_negative = cm[0][0]
+    false_negative = cm[1][0]
+    true_positive = cm[1][1]
+    false_positive = cm[0][1]
+    # Calculate sensitivity and specificity
+    sensitivity = true_positive / (true_positive + false_negative)
+    specificity = true_negative / (true_negative + false_positive)
+    # Return as tuple
     return (sensitivity, specificity)
 
 
