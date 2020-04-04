@@ -101,11 +101,12 @@ class NimAI():
         Return the Q-value for the state `state` and the action `action`.
         If no Q-value exists yet in `self.q`, return 0.
         """
+        # Convert state to tuple and store in key with action
         key = (tuple(state), action)
-        if len(self.q) == 0 or key not in self.q:
-            return 0
-        q_value = self.q[key]
-        if q_value is None:
+        # Get q_value from key
+        q_value = self.q.get(key)
+        # If q is empty or if key is not in q
+        if len(self.q) == 0 or q_value == None:
             return 0
         return q_value
 
@@ -124,7 +125,7 @@ class NimAI():
         `alpha` is the learning rate, and `new value estimate`
         is the sum of the current reward and estimated future rewards.
         """
-        old_value_estimate = self.get_q_value(state,action)
+        old_value_estimate = self.get_q_value(state, action)
         new_value_estimate = reward + future_rewards
         new_q = old_value_estimate + self.alpha * (new_value_estimate - old_value_estimate)
         key = (tuple(state), action)
@@ -140,26 +141,34 @@ class NimAI():
         Q-value in `self.q`. If there are no available actions in
         `state`, return 0.
         """
+        # Initialize best future reward as negative infinity
         best_future_reward = float("-inf")
+        # Use Nim class to get available actions for current state
         actions = Nim.available_actions(state)
-        # actions = self.generate_all_actions(state)
+        # Loop through actions and check reward
         for action in actions:
             key = (tuple(state), action)
-            if key not in self.q:
+            reward = self.q.get(key)
+            if reward == None:
                 reward = 0
-            else:
-                reward = self.q[key]
+            # If reward is greater than existing best_future_reward, update
             if reward > best_future_reward:
                 best_future_reward = reward
+        # Return 0 if no update has been made
         if best_future_reward == float("-inf"):
             best_future_reward = 0
         return best_future_reward
 
     def get_best_action(self, state, actions):
+        '''
+        Helper function for finding and return best action from a set of actions.
+        '''
         best_q_value = float("-inf")
         best_action = None
+        # Loop through actions and get q values
         for action in actions:
             q_value = self.get_q_value(state, action)
+            # If new q_value is better than existing best_q_value, update best_action accordingly
             if q_value > best_q_value:
                 best_q_value = q_value
                 best_action = action
@@ -180,18 +189,26 @@ class NimAI():
         If multiple actions have the same Q-value, any of those
         options is an acceptable return value.
         """
+        # Get available_actions from Nim class
         actions = Nim.available_actions(state)
-        if epsilon is not None:
-            # Do Greedy
+        chosen_action = None
+        # If epsilon is false, choose the best possible action (greedy algorithm)
+        if epsilon is False:
             best_action = self.get_best_action(state, actions)
-            return best_action
+            chosen_action = best_action
+        # If epsilon is true, choose action with epsilon-greedy algorithm
         else:
             prob = self.epsilon
-            rand_int = random.randint(0, len(actions))
-            random_action = actions[rand_int]
+            # Get the best action
             best_action = self.get_best_action(state, actions)
-            chosen_action = random.choices(population=[random_action, best_action],weights=[1-prob, prob],k=1)
-            return chosen_action
+            # Get a random action
+            random_action = random.choice(tuple(actions))
+            population = [best_action, random_action]
+            weights = [1-prob, prob]
+            # Make a choice between best action and random action with weight based on epsilon
+            # 1-epsilon for best_action, epsilon for random_action
+            chosen_action = random.choices(population=population,weights=weights,k=1)[0]
+        return chosen_action
 
 
 def train(n):
