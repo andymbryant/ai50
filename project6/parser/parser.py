@@ -15,15 +15,18 @@ V -> "arrived" | "came" | "chuckled" | "had" | "lit" | "said" | "sat"
 V -> "smiled" | "tell" | "were"
 """
 
-NONTERMINALS = """
-S -> N V | NP VP | NP VP NP | NP VP NP NP | N VP NP Conj N V | N VP NP NP VP NP Adv | NP VP Conj VP NP | NP VP NP NP Conj VP P NP | NP VP NP P NP P NP
-NP -> N | Det N | P N | Adj NP | Det Adj N | Det Adj Adj Adj N
-VP -> V | V P | Adv V | V Adv | V N
-"""
+# Working
+# NONTERMINALS = """
+# S -> N V | NP VP | NP VP NP | NP VP NP NP | NP VP NP Conj N V | N VP NP NP VP NP Adv | NP VP Conj VP NP | NP VP NP NP Conj VP P NP | NP VP NP P NP P NP
+# NP -> N | Det N | P N | Adj NP | Det Adj N | Det Adj Adj Adj N
+# VP -> V | V P | Adv V | V Adv | V N
+# """
 
-# If I include N V as a valid sentence then it adds an extra printout of the tree - this might not be a problem
-# S -> N V | NP VP | NP Conj VP
-# NP -> N | NP | Det N
+NONTERMINALS = """
+S -> NP VP | VP NP | S NP | S Conj S | S VP NP Adv | S Conj S | S Conj VP P NP | S P NP P NP
+NP -> N | Det N | P N | Adj NP | Det Adj N | Det Adj Adj Adj N
+VP -> V | V P | Adv V | V Adv | V N | V N P
+"""
 
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
 parser = nltk.ChartParser(grammar)
@@ -61,7 +64,6 @@ def main():
         for np in np_chunk(tree):
             print(" ".join(np.flatten()))
 
-
 def preprocess(sentence):
     """
     Convert `sentence` to a list of its words.
@@ -70,9 +72,10 @@ def preprocess(sentence):
     character.
     """
     tokens = nltk.word_tokenize(sentence)
+    # Filter out any tokens that do not contain an alphabetic characters
+    # Make the remaining tokens lowercase
     words = [t.lower() for t in tokens if re.search('[a-zA-Z]', t)]
     return words
-
 
 def np_chunk(tree):
     """
@@ -81,10 +84,9 @@ def np_chunk(tree):
     whose label is "NP" that does not itself contain any other
     noun phrases as subtrees.
     """
-    # How do I convert this to a noun phrase?
-    # Also need to make sure it doesn't have any noune phrases underneath - maybe only check tree.leaves()?
-    return [ch for ch in tree.subtrees(filter=lambda t: t.label() == 'NP' )]
-
+    # Filter out all of the subtrees in the tree that do not have the label 'NP'
+    chunks = [ch for ch in tree.subtrees(filter=lambda t: t.label() == 'NP' )]
+    return chunks
 
 if __name__ == "__main__":
     main()
