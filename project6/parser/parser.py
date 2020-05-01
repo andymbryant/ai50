@@ -24,9 +24,7 @@ VP -> V | V P | Adv V | V Adv | V N | V N P
 grammar = nltk.CFG.fromstring(NONTERMINALS + TERMINALS)
 parser = nltk.ChartParser(grammar)
 
-
 def main():
-
     # If filename specified, read sentence from file
     if len(sys.argv) == 2:
         with open(sys.argv[1]) as f:
