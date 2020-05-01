@@ -15,13 +15,6 @@ V -> "arrived" | "came" | "chuckled" | "had" | "lit" | "said" | "sat"
 V -> "smiled" | "tell" | "were"
 """
 
-# Working
-# NONTERMINALS = """
-# S -> N V | NP VP | NP VP NP | NP VP NP NP | NP VP NP Conj N V | N VP NP NP VP NP Adv | NP VP Conj VP NP | NP VP NP NP Conj VP P NP | NP VP NP P NP P NP
-# NP -> N | Det N | P N | Adj NP | Det Adj N | Det Adj Adj Adj N
-# VP -> V | V P | Adv V | V Adv | V N
-# """
-
 NONTERMINALS = """
 S -> NP VP | VP NP | S NP | S Conj S | S VP NP Adv | S Conj S | S Conj VP P NP | S P NP P NP
 NP -> N | Det N | P N | Adj NP | Det Adj N | Det Adj Adj Adj N
