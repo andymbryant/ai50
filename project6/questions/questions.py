@@ -6,10 +6,10 @@ import sys
 import os
 import math
 import operator
+from collections import Counter
 
 FILE_MATCHES = 1
 SENTENCE_MATCHES = 1
-
 
 def main():
     # Check command-line arguments
@@ -68,17 +68,13 @@ def tokenize(document):
     Process document by coverting all words to lowercase, and removing any
     punctuation or English stopwords.
     """
-    stop_puncuation = []
-    for mark in list(string.punctuation):
-        stop_puncuation.append(mark)
-        # stop_puncuation.append(mark + mark)
-        # stop_puncuation.append(mark + mark + mark + mark)
-    stops = stopwords.words('english')
-    # Add punctuation marks to the stop words list
-    stops.extend(stop_puncuation)
+    # Get a set of stop words and standard puncuation
+    stop_words = set(stopwords.words('english'))
+    punctuation = set(string.punctuation)
     # Tokenize the words, remove those that are in the stops list, and make them lowercase
-    words = [word.lower() for word in word_tokenize(document) if word not in stops]
-    return words
+    tokenized_lower = word_tokenize(document.lower())
+    # Filter any tokens that are either in stop_words list or punctuation list
+    return [word for word in tokenized_lower if word not in stop_words and word not in punctuation]
 
 def compute_idfs(documents):
     """
@@ -109,7 +105,6 @@ def count_word_in_documents(documents, word):
             count += 1
     return count
 
-
 def top_files(query, files, idfs, n):
     """
     Given a `query` (a set of words), `files` (a dictionary mapping names of
@@ -124,18 +119,19 @@ def top_files(query, files, idfs, n):
             cum_tf_idf[filename] = 0
         for word in query:
             # If the word in the query appears in the text, calculate tf_idf
-            # NOTE: this formula for tf_idf is different than the one provided in the specifications
+            # tf_idf formula found here: https://iyzico.engineering/how-to-calculate-tf-idf-term-frequency-inverse-document-frequency-from-the-beatles-biography-in-c4c3cd968296
             if word in text:
                 # Get tf
                 num_times_in_text = text.count(word)
                 num_words_in_text = len(list(set(text)))
                 tf = num_times_in_text / num_words_in_text
-                # Multiply tf by idf
+                # Multiply tf by idf to get tf_idf
                 idf = idfs[word]
                 tf_idf = tf * idf
                 cum_tf_idf[filename] += tf_idf
-    # Sort the files by their tf_idf
+    # Sort the files by their tf_idf value, reverse so values are descending
     sorted_files = sorted(cum_tf_idf, reverse=True, key=cum_tf_idf.get)
+    # Select n number of files
     top_files = sorted_files[:n]
     return top_files
 
@@ -147,25 +143,23 @@ def top_sentences(query, sentences, idfs, n):
     the query, ranked according to idf. If there are ties, preference should
     be given to sentences that have a higher query term density.
     """
-    cum_sentence_values = dict()
+    # Initialize dict for storing idf and qtd values for each sentence
+    cum_sentence_values = {key:{'idf': 0, 'qtd': 0} for key in sentences.keys()}
     for word in query:
-        # Loop through the sentences, isolating the sentence as
         for s_key, s_values in sentences.items():
-            # If sentence key not found, initialize with 0 values for idf and qtd
-            if s_key not in cum_sentence_values.keys():
-                cum_sentence_values[s_key] = {
-                    'idf': 0,
-                    'qtd': 0
-                }
+            # Get the number of sentence words that appear in the query
+            num_words_in_query = sum(s_word in query for s_word in s_values)
+            # Check if query word matches sentence word
             if word in s_values:
-                # Increment idf values
+                # Increment idf value for sentence, using given idf value for that word
                 cum_sentence_values[s_key]['idf'] += idfs[word]
                 # Calculate qtd, which is the number of words in the sentence that are also in the query
-                qtd = len([s_word for s_word in s_values if s_word in query]) / len(s_values)
-                # Add qtd values
+                qtd = num_words_in_query / len(s_values)
+                # Add qtd value to dict
                 cum_sentence_values[s_key]['qtd'] = qtd
-    # Sort by idf and qtd
+    # Sort by idf and qtd, reverse to get a descending list
     sorted_sentences = sorted(cum_sentence_values.keys(), reverse=True, key=lambda x: (cum_sentence_values[x]['idf'], cum_sentence_values[x]['qtd']))
+    # Select n number of sentences
     top_sentences = sorted_sentences[:n]
     return top_sentences
 
