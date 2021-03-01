@@ -261,16 +261,17 @@ class CrosswordCreator():
             # Get all neighbors of var and increment count for each
             for neighbor in self.crossword.neighbors(var):
                 # This takes much longer, but works
-                # val = len(self.revise(var, neighbor, False))
-                # if val != -1:
-                    # count += val
+                val = len(self.revise(var, neighbor, False))
+                if val != -1:
+                    count += val
 
-                count += 1
+                # count += 1
             # Add value and count to constraints
             value_counts.append([value, count])
 
         # Sort value counts by count
         value_counts_sorted = sorted(value_counts, key=lambda x: x[1])
+        print(value_counts_sorted)
         # Remove counts from list
         domain_values = [value[0] for value in value_counts_sorted]
         return domain_values
